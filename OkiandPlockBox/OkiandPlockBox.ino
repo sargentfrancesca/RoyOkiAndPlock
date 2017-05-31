@@ -296,5 +296,6 @@ void loop()
       if (value == -28538) {
         plock_box.Close();
       }
+      mySwitch.resetAvailable();
       }
 }
