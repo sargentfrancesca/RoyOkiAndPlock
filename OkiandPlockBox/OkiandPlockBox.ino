@@ -38,8 +38,8 @@ int tachemin = map(50, 0, 180, SERVOMIN, SERVOMAX);
 int tachemax = map(25, 0, 180, SERVOMIN, SERVOMAX);
 int tachenatural = map(37, 0, 180, SERVOMIN, SERVOMAX);
 
-int boxopen = map(180, 0, 180, SERVOMIN, SERVOMAX);
-int boxclosed = map(0, 0, 180, SERVOMIN, SERVOMAX);
+int boxopen = map(90, 0, 180, SERVOMIN, SERVOMAX);
+int boxclosed = map(20, 0, 180, SERVOMIN, SERVOMAX);
 
 uint8_t leftEye = 0;
 uint8_t rightEye = 1;
@@ -147,49 +147,70 @@ class Mouth
 
       l_average = le/numReadings;
       r_average = ri/numReadings;
-
+      
       if (left_state && l_average > 130) {
-        int new_val = map(l_average, 100, 500, mouthmin, mouthmax);
-        Serial.println(l_average);
+        int new_val = map(l_average, 100, 500, mouthmin - 10, mouthmax);        
         pwm.setPWM(okiMouth, 0, l_average);
         pwm.setPWM(plockLeftTache, 0, tachenatural); 
         pwm.setPWM(plockRightTache, 0, tachemin);
       } else if (right_state && r_average > 100) {
-        pwm.setPWM(okiMouth, 0, mouthmin);
         int smaller = map(r_average, 0, 700, tachemin, tachemax);
         int smaller2 = map(700-r_average, 0, 700, tachemin, tachemax);
         pwm.setPWM(plockLeftTache, 0, smaller2); 
-        pwm.setPWM(plockRightTache, 0, smaller);     
+        pwm.setPWM(plockRightTache, 0, smaller);
+        pwm.setPWM(okiMouth, 0, eyemin);    
+      } else {
+        pwm.setPWM(okiMouth, 0, eyemin);
       }
     }
   }
 };
 
 
-class Box
-{
-  int boxInterval;
-  String state; 
-
- public:
-  Box(int boxInterval)
-  {
-    boxInterval = 1000;    
-  }
-
-  void Open() {
-    for (uint16_t pulselen = boxclosed; pulselen < boxopen; pulselen++) {
-        pwm.setPWM(plockBox, 0, pulselen);
-    } 
-    
-  }
-
-  void Close() {
-    for (uint16_t pulselen = boxopen; pulselen > boxclosed; pulselen--) {
-        pwm.setPWM(plockBox, 0, pulselen);
-    }
-  }
-};
+//class Box
+//{
+//  int boxInterval;
+//  String state; 
+//
+// public:
+//  Box(int boxInterval)
+//  {
+//    boxInterval = 1000;    
+//  }
+//
+//  void Open() {
+//    for (uint16_t pulselen = boxclosed; pulselen < boxopen; pulselen++) {
+//        pwm.setPWM(plockBox, 0, pulselen);
+//    } 
+//    
+//  }
+//
+//  void Close() {
+//    for (uint16_t pulselen = boxopen; pulselen > boxclosed; pulselen--) {
+//        pwm.setPWM(plockBox, 0, pulselen);
+//    }
+//  }
+//
+//  void Update() {
+//
+//    if (mySwitch.available()) {
+//      Serial.println("Switch Available");
+//      int value = mySwitch.getReceivedValue();
+//      if (value == -2621) {
+//        Serial.println(F("I am opening the box"));
+//        Open();
+//      } 
+//  
+//      if (value == -2612) {
+//        Serial.println(F("I am closing the box"));
+//        Close();
+//        
+//      }
+//      mySwitch.resetAvailable();
+//      }
+//    
+//  }
+//};
 
 class Sweeper
 {
@@ -208,22 +229,24 @@ public:
     unsigned long moveUpdate = 3000;
     if((millis() - myUpdate) > moveUpdate) {
       myUpdate = millis();
-      for (uint16_t pulselen = eyenatural; pulselen > eyemax; pulselen--) {
+      // eyemax + 10 widens the range on the eye
+      for (uint16_t pulselen = eyenatural; pulselen > eyemax + 10; pulselen--) {
         pwm.setPWM(leftEye, 0, pulselen);
         pwm.setPWM(rightEye, 0, pulselen);
       }
     }  
   }
-
+  
   void Down() {
     unsigned long myUpdate;
     unsigned long moveUpdate = 3000;
     if((millis() - myUpdate) > moveUpdate) {
       myUpdate = millis();
-      for (uint16_t pulselen = eyemax; pulselen < eyemin; pulselen++) {
+      // Eyemin - 10 fixes the shake
+      for (uint16_t pulselen = eyemax; pulselen < eyemin - 10; pulselen++) {
         pwm.setPWM(leftEye, 0, pulselen);
         pwm.setPWM(rightEye, 0, pulselen);
-      } 
+      }
     } 
   }
 
@@ -253,7 +276,7 @@ public:
  
 Sweeper oki_eyes(random(2000, 8000));
 Mouth oki_mouth(1000);
-Box plock_box(1000);
+//Box plock_box(1000);
  
 void setup() 
 { 
@@ -282,20 +305,9 @@ void setup()
  
  
 void loop() 
-{ 
+{      
      oki_eyes.Update();
      oki_mouth.Update();
-     if (mySwitch.available()) {
-      oki_eyes.Update();
-      oki_mouth.Update();
-      int value = mySwitch.getReceivedValue();
-      if (value == -28537) {
-        plock_box.Open();
-      } 
-  
-      if (value == -28538) {
-        plock_box.Close();
-      }
-      mySwitch.resetAvailable();
-      }
+//     plock_box.Update();
+   
 }
