@@ -1,23 +1,20 @@
 /* PlockBox
  *  Uses RC Switch to trigger the opening mechanism for Plock's box
- *  Uses PWM to control the Servo position
+ *  Uses digitalWrite to control the Solenoid state
  *  Button 9 on the Remote = OPENCLOSE (-2621)
 */
 
-#include <Servo.h>
 #include <RCSwitch.h>
 
 RCSwitch mySwitch = RCSwitch();
 
-Servo myservo;
-
-int pos = 0;
+int solenoidPin = 9; // Declate solenoid pin
 
 void setup() {
   Serial.begin(9600);
-  myservo.attach(9);
+  pinMode(solenoidPin, OUTPUT); // Set pin as output
   mySwitch.enableReceive(0);
-  myservo.write(0);
+  digitalWrite(solenoidPin, LOW); // Runs once - ensures closed on startup
 }
 
 void loop() {
@@ -25,11 +22,15 @@ void loop() {
   if (mySwitch.available()) {
     
     int value = mySwitch.getReceivedValue();
+    // You can open Serial (top right, magnifying glass) to detect which button code is being sent
+    Serial.println(value);
+    
+    // This will cause the solenoid to rotate to be open, then closed straight after 
     if (value == -2621) {
-      myservo.writeMicroseconds(1000);
-      delay(1000);
-      myservo.writeMicroseconds(2200);
-      delay(1000); 
+      digitalWrite(solenoidPin, HIGH);
+      delay(1000); // Wait for a second before closing
+      digitalWrite(solenoidPin, LOW);
+      delay(1000); // Wait for a second before anything else can happen
     } 
 
     mySwitch.resetAvailable();
