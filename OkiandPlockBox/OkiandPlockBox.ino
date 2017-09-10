@@ -13,7 +13,8 @@ int res = 5; // reset pins on digital 5
 int left[7]; // store band values in these arrays
 int right[7];
 
-const int numReadings = 7;
+// Increasing the number of readings to take an average from
+const int numReadings = 12;
 int leftReadings[numReadings];
 int rightReadings[numReadings];
 int readIndex = 0;
@@ -62,9 +63,10 @@ void readMSGEQ7() {
  digitalWrite(res, HIGH);
  digitalWrite(res, LOW);
  for(band=0; band <7; band++) {
-   digitalWrite(strobe,LOW); // strobe pin on the shield - kicks the IC up to the next band 
-   delayMicroseconds(10); // 
-   left[band] = analogRead(0); // store left band reading
+   digitalWrite(strobe,LOW);
+   // Increasing the delay in the MSGEQ7 readings
+   delay(100);
+   left[band] = analogRead(0);
    right[band] = analogRead(1); // ... and the right
    digitalWrite(strobe,HIGH); 
  }
@@ -82,7 +84,7 @@ class Mouth
 
   void Update() {
     unsigned long lUpdate;
-    unsigned long uInterval = 3000;
+    unsigned long uInterval = 5000;
     
     if((millis() - lUpdate) > uInterval)  // time to update
     {
@@ -109,7 +111,8 @@ class Mouth
      bool right_state = true;
 
       for (band = 0; band < 7; band++) {
-         if (left[band] > right[band] && left[band] > 150) {
+         // Decreasing the sensitivity
+         if (left[band] > right[band] && left[band] > 180) {
             left_state = true;
             right_state = false;
             l = left[band];            
@@ -122,8 +125,9 @@ class Mouth
             if (readIndex >= numReadings) {
               readIndex = 0;
               }
-            
-          } else if (right[band] > left[band] && right[band] > 120) {
+
+            // Decreasing the sensitivity
+          } else if (right[band] > left[band] && right[band] > 150) {
             left_state = false;
             right_state = true;
             r = right[band];
@@ -147,13 +151,16 @@ class Mouth
 
       l_average = le/numReadings;
       r_average = ri/numReadings;
-      
-      if (left_state && l_average > 130) {
+
+
+      // Decreasing the sensitivity
+      if (left_state && l_average > 190) {
         int new_val = map(l_average, 100, 500, mouthmin - 10, mouthmax);        
         pwm.setPWM(okiMouth, 0, l_average);
         pwm.setPWM(plockLeftTache, 0, tachenatural); 
         pwm.setPWM(plockRightTache, 0, tachemin);
-      } else if (right_state && r_average > 100) {
+        // Decreasing the sensitivity
+      } else if (right_state && r_average > 160) {
         int smaller = map(r_average, 0, 700, tachemin, tachemax);
         int smaller2 = map(700-r_average, 0, 700, tachemin, tachemax);
         pwm.setPWM(plockLeftTache, 0, smaller2); 
@@ -165,52 +172,6 @@ class Mouth
     }
   }
 };
-
-
-//class Box
-//{
-//  int boxInterval;
-//  String state; 
-//
-// public:
-//  Box(int boxInterval)
-//  {
-//    boxInterval = 1000;    
-//  }
-//
-//  void Open() {
-//    for (uint16_t pulselen = boxclosed; pulselen < boxopen; pulselen++) {
-//        pwm.setPWM(plockBox, 0, pulselen);
-//    } 
-//    
-//  }
-//
-//  void Close() {
-//    for (uint16_t pulselen = boxopen; pulselen > boxclosed; pulselen--) {
-//        pwm.setPWM(plockBox, 0, pulselen);
-//    }
-//  }
-//
-//  void Update() {
-//
-//    if (mySwitch.available()) {
-//      Serial.println("Switch Available");
-//      int value = mySwitch.getReceivedValue();
-//      if (value == -2621) {
-//        Serial.println(F("I am opening the box"));
-//        Open();
-//      } 
-//  
-//      if (value == -2612) {
-//        Serial.println(F("I am closing the box"));
-//        Close();
-//        
-//      }
-//      mySwitch.resetAvailable();
-//      }
-//    
-//  }
-//};
 
 class Sweeper
 {
@@ -276,7 +237,6 @@ public:
  
 Sweeper oki_eyes(random(2000, 8000));
 Mouth oki_mouth(1000);
-//Box plock_box(1000);
  
 void setup() 
 { 
@@ -308,6 +268,5 @@ void loop()
 {      
      oki_eyes.Update();
      oki_mouth.Update();
-//     plock_box.Update();
    
 }
