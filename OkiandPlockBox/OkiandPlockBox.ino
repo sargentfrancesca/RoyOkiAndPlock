@@ -64,8 +64,8 @@ void readMSGEQ7() {
  digitalWrite(res, LOW);
  for(band=0; band <7; band++) {
    digitalWrite(strobe,LOW);
-   // Increasing the delay in the MSGEQ7 readings
-   delay(100);
+   // Increasing the delay in the MSGEQ7 readings - but replacing with microseconds
+   delayMicroseconds(100);
    left[band] = analogRead(0);
    right[band] = analogRead(1); // ... and the right
    digitalWrite(strobe,HIGH); 
