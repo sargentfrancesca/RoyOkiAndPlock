@@ -148,13 +148,13 @@ class Mouth
       l_average = le/numReadings;
       r_average = ri/numReadings;
       
-      if (left_state && l_average > 200) {
-        int new_val = map(l_average, 100, 500, mouthmin - 10, mouthmax);        
+      if (left_state && l_average > 350) {
+        int new_val = map(l_average, 350, 500, mouthmin - 10, mouthmax);        
         pwm.setPWM(okiMouth, 0, l_average);
         pwm.setPWM(plockLeftTache, 0, tachenatural); 
         pwm.setPWM(plockRightTache, 0, tachemin);
-      } else if (right_state && r_average > 250) {
-        int smaller = map(r_average, 0, 700, tachemin, tachemax);
+      } else if (right_state && r_average > 400) {
+        int smaller = map(r_average, 400, 700, tachemin, tachemax);
         int smaller2 = map(700-r_average, 0, 700, tachemin, tachemax);
         pwm.setPWM(plockLeftTache, 0, smaller2); 
         pwm.setPWM(plockRightTache, 0, smaller);
